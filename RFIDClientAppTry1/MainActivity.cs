@@ -27,7 +27,7 @@ namespace RFIDClientAppTry1
                 try
                 {
                     clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    clientSocket.BeginConnect(new IPEndPoint(IPAddress.Loopback, 3333), new AsyncCallback(ConnectCallback), null);
+                    clientSocket.BeginConnect(new IPEndPoint(IPAddress.Parse("208.44.252.155"), 3353), new AsyncCallback(ConnectCallback), null);
                     msg.Text = "Button clicked.";
                 }
                 catch (Exception ex)
