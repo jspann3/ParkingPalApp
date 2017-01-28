@@ -81,6 +81,7 @@ namespace RFIDClientAppTry1
             {
                 Console.WriteLine(ex.ToString());
             }
+
             latch.CountDown();
         }
 
@@ -104,7 +105,11 @@ namespace RFIDClientAppTry1
             {
                 buffer = new byte[clientSocket.ReceiveBufferSize];
                 clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
+
+                //wait until countdown is at 0 to continue
+                //causes UI to wait for data before it updates
                 latch.Await();
+
                 return text;
             }
             catch (Exception ex)

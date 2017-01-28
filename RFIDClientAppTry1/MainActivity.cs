@@ -17,8 +17,6 @@ namespace RFIDClientAppTry1
         private Client client;
 
         private TextView msg;
-        private string textToWrite = "NothingYet";
-        private CountDownLatch latch = new CountDownLatch(0);
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -53,21 +51,14 @@ namespace RFIDClientAppTry1
             {
                 try
                 {
-                    client.LotClicked();                    
-                    RunOnUiThread(() => UpdateUI());                   
-                    msg.Text = textToWrite;
+                    client.LotClicked();
+                    msg.Text = client.LotReceive();
                 }
                 catch (Exception ex)
                 {
                     msg.Text = ex.ToString();
                 }
             };
-        }
-
-        private void UpdateUI()
-        {
-            textToWrite = client.LotReceive();
-            latch.CountDown();
         }
     }
 }
