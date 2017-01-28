@@ -12,12 +12,17 @@ using Android.Widget;
 using System.Net.Sockets;
 using System.Net;
 using System.ComponentModel;
+using Java.Util.Concurrent;
 
 namespace RFIDClientAppTry1
 {
     class Client
     {
-        private Socket clientSocket;
+        public Socket clientSocket;
+
+        private string text;
+        private CountDownLatch latch = new CountDownLatch(0);
+
         public Client()
         {
 
@@ -25,7 +30,7 @@ namespace RFIDClientAppTry1
 
         private byte[] buffer;
 
-        private void btnConnect_Click(object sender, EventArgs e)
+        public void Connect()
         {
             try
             {
@@ -68,29 +73,24 @@ namespace RFIDClientAppTry1
             {
                 int received = clientSocket.EndReceive(ar);
 
-
-
                 Array.Resize(ref buffer, received);
-                string text = Encoding.ASCII.GetString(buffer);
-
-                //textBox.Text = text;
+                text = Encoding.ASCII.GetString(buffer);
                 Array.Resize(ref buffer, clientSocket.ReceiveBufferSize);
-                //clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
+            latch.CountDown();
         }
 
-        private void btnLot_Click(object sender, EventArgs e)
+        public void LotClicked()
         {
             try
             {
+                latch = new CountDownLatch(1);
                 buffer = Encoding.ASCII.GetBytes("<LOT>");
-                clientSocket.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), null);
-                buffer = new byte[clientSocket.ReceiveBufferSize];
-                clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
+                clientSocket.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), null);                
             }
             catch (Exception ex)
             {
@@ -98,33 +98,19 @@ namespace RFIDClientAppTry1
             }
         }
 
-        private void btnLot1_Click(object sender, EventArgs e)
+        public string LotReceive()
         {
             try
             {
-                buffer = Encoding.ASCII.GetBytes("<LOT1>");
-                clientSocket.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), null);
                 buffer = new byte[clientSocket.ReceiveBufferSize];
                 clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
+                latch.Await();
+                return text;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-            }
-        }
-
-        private void btnLot2_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                buffer = Encoding.ASCII.GetBytes("<LOT2>");
-                clientSocket.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), null);
-                buffer = new byte[clientSocket.ReceiveBufferSize];
-                clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
+                return "ERROR";
             }
         }
     }
